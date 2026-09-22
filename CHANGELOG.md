@@ -2,6 +2,57 @@
 
 User-facing changes for the public Microsoft Fabric Skills release.
 
+## [0.3.17] - 2026-09-17
+
+### Added
+- **`skills/semantic-model-authoring`** -- adds guidance for creating, editing, reordering, renaming, and deleting Power BI field parameters through the modeling MCP or TMDL.
+- **`powerbi-report-cli`** -- one Power BI report skill covering the whole report item. It picks the right mode from your request: planning for requirements, scope and the approval gate; design for tone, page archetype, chart choice, layout, colour, typography and accessibility; authoring for local PBIR/PBIP page, visual, filter, slicer, theme and formatting edits plus PBIR validation and Power BI Desktop verification; and management for publishing, rebinding and updating report items in Fabric.
+
+### Changed
+- **`powerbi-authoring` bundle** -- now ships the single `powerbi-report-cli` skill in place of the four separate Power BI report skills. Existing report prompts keep working and you no longer need to pick a skill per phase; ask for the report outcome you want and the skill selects the mode.
+- **FabricIQ MCP server** -- the endpoint moved from `https://api.fabric.microsoft.com/v1/mcp/fabricaihub/integrations/m365` to `https://fabriciq.svc.cloud.microsoft/v1/mcp/fabriciq`, and the required routing header changed from `X-VARIANTS: Fabric.Routing.PowerBIDataExploration` to `X-VARIANTS: Fabric.Routing.FabricIQ.V1`. Your existing token keeps working: the new endpoint accepts both the Power BI audience (`https://analysis.windows.net/powerbi/api`) and the Fabric audience (`https://api.fabric.microsoft.com`), so nothing needs re-minting. The bundled configuration is already updated; if you registered FabricIQ by hand in your own MCP client config, re-register it with the new URL and header — the MCP setup instructions have the updated commands.
+- **FabricIQ skill and agent** -- the `ResolveReportIdFromUrl(url)` tool is replaced by `ResolveFabricItem(fabricItemId=<guid-or-url>)` on the new endpoint. It accepts a bare item GUID (preferred) as well as a supported Fabric or Power BI artifact URL, and returns the canonical `fabricItemId`, `itemType`, `workspaceId` when known, plus optional next-step instructions. The other FabricIQ tools (`DiscoverArtifacts`, `GetReportMetadata`, `GetSemanticModelSchema`, `ValueSearch`, `ExecuteQuery`) are unchanged, so the rest of the documented workflow is unaffected.
+- **APM packaging** -- installing the collection, or the FabricIQ skill on its own, now registers the new endpoint and routing header.
+
+### Removed
+- **`powerbi-report-authoring`**, **`powerbi-report-design`**, **`powerbi-report-management`** and **`powerbi-report-planning`** -- replaced by the matching modes of `powerbi-report-cli`. This is a **rename as well as a merge**: the four skills carried no access-method suffix and the merged skill adds the `-cli` discriminator, so if you pin any of those four skills by name, switch to `powerbi-report-cli`.
+
+### Fixed
+- **FabricIQ lost automatic Azure CLI sign-in in Claude Code** — the bundled plugin attaches a native Azure CLI `headersHelper` to its remote MCP servers by matching the Fabric API host. Because FabricIQ now answers on its own service host, it no longer matched and was shipped as the only remote server in the bundle with no way to authenticate, so its tools failed to connect after install. Host detection now covers the FabricIQ endpoint as well, and all three bundled remote MCP servers again sign in from your existing `az login` with no extra prompt.
+- **Claude Desktop registration was broken for every MCP server, not just FabricIQ** -- the provided registration scripts wrote a bridge entry invoking `@anthropic/mcp-proxy`, which is not a published npm package, so the generated configuration could never start. They now write a pinned `mcp-remote` entry and forward the routing header and bearer token through its `--header` flag, which is what FabricIQ needs to authenticate.
+- **The registration scripts no longer write a Claude credential that cannot work** -- when asked for API-key authentication they produced `Authorization: api-key <key>`, which is not a real authentication scheme, and when asked for bearer authentication without a token they wrote the literal text `${FABRIC_MCP_TOKEN}` as the credential, because Claude passes those values through unchanged instead of substituting them. Both cases now skip the header and tell you exactly what to re-run, so a broken sign-in surfaces immediately instead of as a confusing connection failure later.
+- **Manual VS Code setup instructions** -- the example used the legacy `github.copilot.chat.mcpServers` setting and omitted the routing header and token, so following it produced a server that connected and then failed on every call. It now shows the current `mcp.json` `servers` shape with a `headers` object and a prompted, password-masked token input.
+
+## [0.3.16] - 2026-09-10
+
+### Added
+- Added a root `apm.yml` plus a generated `skills/<name>/apm.yml` for every skill, so a user can install a single skill with `apm install microsoft/skills-for-fabric --skill <name>` instead of a whole plugin bundle.
+- Documented the APM bootstrap and the single-skill install flow, including the scope difference between Copilot CLI (`-g`, `~/.copilot/mcp-config.json`) and VS Code (project scope, `.vscode/mcp.json`).
+
+### Changed
+- Corrected the MCP setup reference in `sqldw-cli` to link the `mcp-setup/README.md` file rather than the directory, so the link resolves for a single installed skill.
+
+### Fixed
+- The `fabric-skills` plugin reuses Azure CLI sign-in for remote MCP connections in local Claude Code. Added matching Codex configuration and guidance for older registrations, without copying access tokens or registering another OAuth application.
+- Improved plugin installation compatibility with older Claude Code versions.
+
+## [0.3.15] - 2026-09-04
+
+
+### Added
+- **`skills/sqldw-cli`** -- added a read-only Capacity Metrics workflow that discovers the installed metrics model, adapts to timestamped or fixed-window schema variants, identifies costly Warehouse and Lakehouse SQL endpoint items, and analyzes every Query Insights request overlapping the Capacity Metrics spike range. Results keep fixed-window capacity health separate from broader item history, disclose timeframe and 30-day Query Insights limits, and treat SQL statement candidates as best-effort correlation because Capacity Metrics Operation Id and Query Insights `distributed_statement_id` are different identifiers.
+- **`onelake-catalog-govern-cli`** -- audits and safely remediates Microsoft Fabric OneLake catalog governance across domains, workspaces, capacities, protection, and curation, with separate permission-aware modes for tenant admins and data owners.
+
+### Changed
+- **`skills/sqldw-cli`** -- expanded composite diagnostics for failed and canceled requests, SQL pool pressure, resource concentration, Lakehouse table health, performance regressions, optimization targets, and user/application activity. Custom SQL pool guidance now uses recurring historical contention and stable application classifiers rather than converting Capacity Metrics CU seconds or Query Insights CPU milliseconds into pool percentages.
+- **`skills/sqldw-cli`** -- made operations follow-ups user-facing: results now turn evidence into concrete actions on the investigated workload, SQL item, capacity, or correlation report, while retaining timezone, retention, lag, and confidence caveats as limitations rather than skill-development suggestions.
+
+### Fixed
+- **`skills/sqldw-cli`** -- corrected pressure intervals to use the complete pool-state event stream and exact pool matching, included canceled requests in non-success analysis, limited Lakehouse health checks to Lakehouse SQL analytics endpoints, and stopped recommending result-set caching while the feature is unavailable.
+- **`skills/sqldw-cli`** -- retained command-less and legitimate Query Insights-referencing requests in historical custom-pool profiles, excluding only agent-labeled diagnostics, and widened duration and CPU aggregation to `bigint`.
+- **`semantic-model-authoring`** -- preserves existing Prep data for AI configuration during unrelated semantic model edits and uses the Power BI modeling MCP for read-only metadata discovery when available.
+- `synapse-migration` now handles Dedicated SQL Pool DACPAC and zipped SQL-project schema and code migrations more reliably, validates generated Spark SQL, safely resumes interrupted operations, and isolates concurrent migrations across multiple datamarts.
+
 ## [0.3.14] - 2026-08-26
 
 

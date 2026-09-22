@@ -120,6 +120,11 @@ Developers use REST APIs to manage artifacts, then protocol-specific connections
 - Use empty search string with type filter to list all items of a type
 - Consumption skill: `skills/search-consumption-cli/SKILL.md`
 
+### OneLake Catalog Governance
+- Use `skills/onelake-catalog-govern-cli/SKILL.md` for permission-aware admin/data-owner audits and guarded remediation
+- Start in the audit mode for the caller's API tier before any write
+- Treat domain assignment as governance metadata, not an access-control boundary
+
 ### Semantic Models (DAX)
 - Primary CLI tool: `az rest` against the Fabric REST API
 - Primary MCP tool: `powerbi-modeling-mcp`
@@ -128,10 +133,7 @@ Developers use REST APIs to manage artifacts, then protocol-specific connections
 
 ### Power BI Reports (PBIR/PBIP)
 - Keep planning, design, local PBIR edits, and Fabric item management as separate phases
-- Planning: `skills/powerbi-report-planning/SKILL.md`
-- Design: `skills/powerbi-report-design/SKILL.md`
-- Authoring: `skills/powerbi-report-authoring/SKILL.md`
-- Management: `skills/powerbi-report-management/SKILL.md`
+- Power BI report skill: `skills/powerbi-report-cli/SKILL.md` (planning, design, authoring and management are modes)
 
 ### Data Agents
 - Use Python SDK within Fabric notebooks for rapid prototyping

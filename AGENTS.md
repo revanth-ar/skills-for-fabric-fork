@@ -25,6 +25,9 @@ az account get-access-token --resource https://api.fabric.microsoft.com
 az account get-access-token --resource https://database.windows.net
 ```
 
+Local Codex needs its own MCP configuration to reuse Azure CLI sign-in.
+See `mcp-setup/README.md`; reading these instructions alone does not register MCPs.
+
 ## Primary Reference
 Fabric REST APIs: https://learn.microsoft.com/en-us/rest/api/fabric/articles/
 
@@ -42,6 +45,7 @@ Fabric REST APIs: https://learn.microsoft.com/en-us/rest/api/fabric/articles/
 | Event Schema Set | https://learn.microsoft.com/en-us/rest/api/fabric/eventschemaset/items/ |
 | Activator | https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-introduction |
 | Catalog Search | https://learn.microsoft.com/en-us/rest/api/fabric/core/catalog/search |
+| OneLake Catalog Governance | https://learn.microsoft.com/en-us/fabric/governance/onelake-catalog-govern |
 | Semantic Models | https://learn.microsoft.com/en-us/power-bi/connect-data/service-datasets-understand |
 | Power BI Reports | https://learn.microsoft.com/en-us/power-bi/developer/projects/projects-report |
 | Data Agents | https://learn.microsoft.com/en-us/fabric/data-science/concept-data-agent |
@@ -66,10 +70,7 @@ Fabric REST APIs: https://learn.microsoft.com/en-us/rest/api/fabric/articles/
 - Activator for Reflex alerts, notifications, and automated actions over Fabric events and data, including Power BI-backed metrics
 - DAX for Semantic Model measures
 - Semantic model development (see `semantic-model-authoring`)
-- Power BI report planning skill: `skills/powerbi-report-planning/SKILL.md` — requirements, page plan, approval gate
-- Power BI report design skill: `skills/powerbi-report-design/SKILL.md` — archetype routing, layout, theme, accessibility
-- Power BI report authoring skill: `skills/powerbi-report-authoring/SKILL.md` — PBIR/PBIP file mechanics, Desktop reload/screenshot
-- Power BI report management skill: `skills/powerbi-report-management/SKILL.md` — Fabric report item CRUD via `az rest`
+- Power BI report skill: `skills/powerbi-report-cli/SKILL.md` — one skill for reports; `planning` (requirements, page plan, approval gate), `design` (archetype routing, layout, theme, accessibility), `authoring` (PBIR/PBIP file mechanics, Desktop reload/screenshot) and `management` (Fabric report item CRUD via `az rest`) are modes
 - Spark skill: `skills/spark-cli/SKILL.md` — notebook authoring and runs, Livy analysis, read-only diagnostics, and MLV lifecycle operations
 - Variable Library (CI/CD): parameterize workspaces across environments — author definitions, value sets, and active value set item state, and wire consumers to Variable Library references (see `skills/variable-library-cli/SKILL.md`)
 
@@ -79,6 +80,7 @@ Fabric REST APIs: https://learn.microsoft.com/en-us/rest/api/fabric/articles/
 - Parameterize everything for reusability
 - Warehouse operations skill: `skills/sqldw-cli/SKILL.md` — performance diagnostics, slow queries, query insights
 - Azure Monitor observability operations skill: `skills/azmon-mirroredcatalogs-operations-cli/SKILL.md` — onboard Azure Monitor / App Insights / Log Analytics observability data into Fabric and correlate telemetry with business data for business-impact insights, an optional Real-Time (KQL) dashboard, and opt-in Operations Agent instructions
+- OneLake catalog governance skill: `skills/onelake-catalog-govern-cli/SKILL.md` — audit and remediate domain, workspace, capacity, protection, and curation posture through permission-aware modes
 
 ### Git Integration (ALM / CI-CD)
 - Operations skill: `skills/git-integration-operations-cli/SKILL.md` — automate the Git integration lifecycle from CLI (connect to Azure DevOps/GitHub, commit, update/pull, sync status, resolve conflicts, disconnect, service-principal sync) via the Fabric CLI (`fab api`) with `az rest` fallback
